@@ -1,6 +1,8 @@
 
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
+import SimpleLightbox from "simplelightbox";
+
 
 
 // ========================================================
@@ -32,9 +34,10 @@ refs.searchForm.addEventListener('submit', fetchData);
 
 async function fetchData(ev) {
   ev.preventDefault()
+  deleteLoadMoreBtn()
   refs.searchQuery = ev.currentTarget.elements.searchQuery.value;
   try {
-    if (refs.input.value.length === 0) {
+    if (ev.currentTarget.elements.searchQuery.value.trim().length === 0) {
       Notify.failure("введите что-то для поиска!");
       return;
     }
@@ -42,10 +45,9 @@ async function fetchData(ev) {
     refs.gallery.innerHTML = "";
 
     const response = await fetchSearch(refs.searchQuery, refs.page);
-
-    loadMoreBtn();
-    
-    drawnResultCards(response.data.hits)
+    Notify.success(`Hooray! We found ${response.data.totalHits} images.`);
+    loadMoreBtn(response.data.totalHits);
+    drawnResultCards(response.data.hits);
   } catch (error) {
     console.log(error);
     deleteLoadMoreBtn()
@@ -89,7 +91,7 @@ function drawnResultCards(array) {
 
 refs.loadMoreBtn.addEventListener('click', loadMore)
 
-async function loadMore () {
+async function loadMore() {
   refs.page += 1;
   console.log(refs.page);
   try {
@@ -118,8 +120,8 @@ async function loadMore () {
 
 // ==================================================================
 
-function loadMoreBtn() {
-  if (!refs.loadMoreBtn.classList.contains('is-visible')) {
+function loadMoreBtn(totalHits) {
+  if (!refs.loadMoreBtn.classList.contains('is-visible') || totalHits < 40) {
     return
   };
   refs.loadMoreBtn.classList.remove('is-visible')
