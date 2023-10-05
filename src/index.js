@@ -1,138 +1,36 @@
-
+// js-libs import
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
-
 import SimpleLightbox from "simplelightbox";
 
+// CSS import
+// ==========================================================
+import "simplelightbox/dist/simple-lightbox.min.css";
 
 
+// js-files and functions import
 // ========================================================
+import refs from './js/refs.js'
 
 import { fetchSearch } from './js/searchApi.js'
+import fetchData from './js/fetchData.js';
+import { loadMoreBtn, deleteLoadMoreBtn } from './js/loadMoreBtn.js'
+import loadMore from './js/loadMoreApi.js'
+import drawnResultCards from './js/elementRenderer.js';
 
+// main js code
 // ========================================================
 
-export const refs = {
-  page: 1,
-  // =======================================
-  submitBtn: document.querySelector('#submit'),
-  loadMoreBtn: document.querySelector('.load-more'),
-  // =======================================
-  input: document.querySelector("#searchInput"),
-  searchForm: document.getElementById('search-form'),
-  // ========================================
-  gallery: document.querySelector(".gallery"),
-  // ========================================
-  searchQuery: '',
-};
+const gallery = new SimpleLightbox('.js-lightbox-img');
+
 
 //
 //
 //
 // =============================================================
 
-refs.searchForm.addEventListener('submit', fetchData);
-
-async function fetchData(ev) {
-  ev.preventDefault()
-  deleteLoadMoreBtn()
-  refs.searchQuery = ev.currentTarget.elements.searchQuery.value;
-  try {
-    if (ev.currentTarget.elements.searchQuery.value.trim().length === 0) {
-      Notify.failure("введите что-то для поиска!");
-      return;
-    }
-    refs.page = 1
-    refs.gallery.innerHTML = "";
-
-    const response = await fetchSearch(refs.searchQuery, refs.page);
-    Notify.success(`Hooray! We found ${response.data.totalHits} images.`);
-    loadMoreBtn(response.data.totalHits);
-    drawnResultCards(response.data.hits);
-  } catch (error) {
-    console.log(error);
-    deleteLoadMoreBtn()
-  }
-}
-
-function drawnResultCards(array) {
-  const fragment = document.createDocumentFragment()
-  // =============================================
-
-  array.map(el => {
-    const card = document.createElement('div');
-    card.classList.add('photo-card');
-    card.innerHTML = `
-      <img height="240px" width="426px" src="${el.largeImageURL}" alt="${el.tags}" loading="lazy"/>
-      <div class="info">
-        <p class="info-item">
-        <b>Likes</b>
-        ${el.likes}
-        </p>
-        <p class="info-item">
-        <b>Views</b>
-        ${el.views}
-        </p>
-        <p class="info-item">
-        <b>Comments</b>
-        ${el.comments}
-        </p>
-        <p class="info-item">
-        <b>Downloads</b>
-        ${el.comments}
-        </p>
-      </div>`;
-    fragment.appendChild(card);
-  });
-  refs.gallery.appendChild(fragment);
-};
+refs.searchForm.addEventListener('submit', (ev) => fetchData(ev,refs,fetchSearch,drawnResultCards,deleteLoadMoreBtn,loadMoreBtn,gallery));
 
 
 // ========================================================
 
-refs.loadMoreBtn.addEventListener('click', loadMore)
-
-async function loadMore() {
-  refs.page += 1;
-  console.log(refs.page);
-  try {
-    const response = await fetchSearch(refs.searchQuery, refs.page);
-    console.log(response.data.totalHits);
-    if (response.data.totalHits < refs.page * 40 ) {
-      deleteLoadMoreBtn()
-      Notify.info("We're sorry, but you've reached the end of search results.");
-    }
-
-    drawnResultCards(response.data.hits);
-  }
-  catch (error) {
-    console.log(error);
-  };
-};
-
-
-
-
-
-
-
-
-
-
-// ==================================================================
-
-function loadMoreBtn(totalHits) {
-  if (!refs.loadMoreBtn.classList.contains('is-visible') || totalHits < 40) {
-    return
-  };
-  refs.loadMoreBtn.classList.remove('is-visible')
-}
-
-function deleteLoadMoreBtn() {
-  if (refs.loadMoreBtn.classList.contains('is-visible')) {
-    return
-  }
-  refs.loadMoreBtn.classList.add('is-visible')
-}
-
-// ====================================================================
-
+refs.loadMoreBtn.addEventListener('click', () => loadMore(refs,fetchSearch,drawnResultCards,gallery,deleteLoadMoreBtn))

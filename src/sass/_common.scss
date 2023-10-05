@@ -89,3 +89,12 @@ body {
 #submit {
   cursor: pointer;
 }
+
+.js-lightbox-img {
+  transition: transform 250ms;
+  cursor: zoom-in;
+}
+
+.js-lightbox-img:hover {
+  transform: scale(0.99);
+}
